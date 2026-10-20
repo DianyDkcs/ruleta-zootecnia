@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ruleta de límites zootécnicos</title>
+  <style>
+    :root{
+      --bg:#f3f7fb;--ink:#15263f;--muted:#61728c;--blue:#1766e9;--navy:#0d2447;--line:#dae4f0;
+      --cyan:#00aec5;--ok:#08795d;--card:#0b1d1a;--card2:#0f2a24;--gold:#f0bd3a;--gold-line:#aa8423;
+      --soft:#edf8f5;--soft-border:#b4e3d2;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+    header{background:linear-gradient(115deg,#0b2042,#164b97);color:white;padding:34px max(22px,calc((100vw - 1160px)/2)) 45px}
+    header .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#a4d7ff}
+    h1{font-size:clamp(25px,4vw,38px);line-height:1.2;margin:8px 0}
+    header p{color:#d1e6fa;max-width:760px;margin:0}
+    .container{max-width:1160px;margin:-22px auto 50px;padding:0 18px}
+    .grid{display:grid;grid-template-columns:1fr 1.08fr;gap:18px}
+    .panel{background:white;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 10px 28px #193b6610;min-width:0}
+    .panel h2{font-size:18px;margin:0 0 5px}
+    .muted{color:var(--muted)}.small{font-size:13px}
+    .statbar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+    .stat{background:#f3f7fc;padding:13px;border-radius:12px}
+    .stat strong{font-size:24px;display:block;color:var(--navy)}
+    .stat span{font-size:12px;color:var(--muted)}
+    label{display:block;font-weight:650;margin:17px 0 7px}
+    input{font:inherit;border:1px solid #cad7e7;border-radius:10px;padding:12px;width:100%;background:white;color:var(--ink)}
+    input:focus{outline:3px solid #b5d9ff;border-color:var(--blue)}
+    button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:700;font:inherit}
+    button.primary{background:var(--blue);color:white}button.primary:hover{background:#0c53c6}
+    button.primary:disabled,button:disabled{opacity:.55;cursor:not-allowed}
+    button.secondary{background:#eef4fb;color:var(--navy);border:1px solid #d8e4f1}
+    .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+    .wheel-wrap{height:218px;display:grid;place-items:center;position:relative;overflow:hidden}
+    .wheel{height:186px;width:186px;border-radius:50%;border:9px solid #e4f2ff;background:conic-gradient(#1363d8 0deg 45deg,#04b0be 45deg 90deg,#225494 90deg 135deg,#76d0e8 135deg 180deg,#1363d8 180deg 225deg,#04b0be 225deg 270deg,#225494 270deg 315deg,#76d0e8 315deg 360deg);box-shadow:0 8px 22px #123b6b25;display:grid;place-items:center;transition:transform 1.25s cubic-bezier(.16,.8,.25,1)}
+    .hub{height:114px;width:114px;border-radius:50%;background:white;display:grid;place-items:center;text-align:center;box-shadow:0 4px 15px #103d6a28;font-weight:800;color:#174b99;font-size:16px;padding:12px}
+    .pointer{position:absolute;top:3px;left:calc(50% - 12px);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:21px solid #e77720;z-index:1}
+    .notice{margin-top:12px;padding:11px 13px;border-radius:10px;font-size:13px}
+    .notice.warn{color:#99521b;background:#fff5e7}.notice.ok{background:#e8f6ee;color:#08795d}.notice.err{background:#fff1eb;color:#963c26}
+    .status{font-size:12px;padding:6px 10px;border-radius:999px;background:#fff0df;color:#945a18}.status.ready{background:#e5f5eb;color:#076c46}
+    .topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .wide{margin-top:18px}
+    .tablewrap{overflow:auto;margin-top:15px}
+    table{width:100%;border-collapse:collapse;min-width:630px}th{text-align:left;background:#eff5fb;color:#35506d;font-size:12px;letter-spacing:.5px;text-transform:uppercase;padding:11px}
+    td{padding:12px 11px;border-bottom:1px solid #e8eef5;vertical-align:top}td:nth-child(1),td:nth-child(4){white-space:nowrap}
+    .pill{border-radius:40px;background:#e7f2ff;color:#1757a6;padding:3px 9px;display:inline-block;font-weight:700;font-size:12px}
+    .empty{text-align:center;padding:32px;color:var(--muted)}
+    .footer{margin-top:17px;font-size:12px;color:var(--muted)}
+
+    .assignment{display:none;margin-top:18px}.assignment.visible{display:block}
+    .case-card{background:linear-gradient(90deg,#071615,#0a221d 45%,#061915);color:#e9f3ef;border:1px solid #223e37;border-radius:12px;padding:14px 14px 16px;box-shadow:inset 0 0 0 1px #0d3026}
+    .case-head{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:start;margin-bottom:10px}
+    .case-badge{width:56px;height:56px;border-radius:10px;background:var(--gold);color:#111;display:grid;place-items:center;font-size:18px;font-weight:800}
+    .case-title{font-size:18px;font-weight:800;line-height:1.15;margin:0;color:#f1f5f4}
+    .case-sub{margin:2px 0 0;color:#aebbb6}
+    .case-text{font-size:16px;line-height:1.65;color:#eef4f1;margin:6px 0 12px}
+    .formula-box{background:rgba(240,189,58,.10);border:1px solid var(--gold-line);border-radius:8px;padding:16px 18px;color:#f9faf8;margin:10px 0 14px}
+    .formula-box.center{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .formula-main{font-size:25px;font-family:"Times New Roman",Georgia,serif;font-style:italic;line-height:1.55;white-space:pre-wrap}
+    .formula-after{font-size:16px;color:#ecf2ef}
+    .piecewise{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+    .piece-left{font-size:25px;font-family:"Times New Roman",Georgia,serif;font-style:italic;white-space:nowrap;padding-top:20px}
+    .piece-right{font-size:18px;font-family:"Times New Roman",Georgia,serif;line-height:1.7;white-space:pre-wrap}
+    .piece-line{display:flex;justify-content:flex-start;gap:20px;white-space:nowrap}
+    .piece-rows{display:grid;gap:6px}
+    .ask-line{font-size:15px;line-height:1.7;color:#eef4f0;margin:0 0 14px}
+    .deliver-title{font-size:15px;font-weight:800;letter-spacing:.3px;color:#aebbb6;margin:0 0 8px;text-transform:uppercase}
+    .deliver-list{margin:0;padding-left:22px;color:#eef4f0}.deliver-list li{margin:0 0 6px}
+
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    @media(max-width:770px){header{padding:26px 21px 43px}.panel{padding:19px}.statbar{gap:6px}.stat{padding:10px}.stat strong{font-size:19px}.case-head{grid-template-columns:48px 1fr}.case-badge{width:48px;height:48px;font-size:17px}.formula-main,.piece-left{font-size:20px}.piece-right{font-size:16px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Cálculo de una variable · Evaluación individual</div>
+  <h1>Ruleta de límites zootécnicos</h1>
+  <p>Un ejercicio por estudiante. Ronda 1 secuencial; rondas siguientes aleatorias sin repeticiones.</p>
+</header>
+
+<main class="container">
+  <div class="grid">
+    <section class="panel">
+      <h2>Sortear un caso</h2>
+      <p class="muted small">Ingresa tus nombres y apellidos completos. Si ya participaste, se mostrará tu asignación original.</p>
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <div class="wheel" id="wheel"><div class="hub" id="wheelText">20<br>CASOS</div></div>
+      </div>
+      <label for="studentName">Nombre completo del estudiante</label>
+      <input id="studentName" maxlength="150" autocomplete="name" placeholder="Ej. María Fernanda Pérez">
+      <div class="actions"><button id="draw" class="primary" type="button" disabled>🎲 Sortear caso</button></div>
+      <div id="message" aria-live="polite"></div>
+      <div class="assignment" id="assignment" aria-live="polite"></div>
+      <div class="notice warn">Se registra en la base central de Supabase. Para evitar sorteos fraudulentos, el docente debe verificar la identidad del estudiante.</div>
+    </section>
+
+    <section class="panel">
+      <div class="topline"><h2>Estado de la evaluación</h2><span id="connection" class="status">Sin configurar</span></div>
+      <p class="muted small">Avance conjunto de todos los estudiantes.</p>
+      <div class="statbar">
+        <div class="stat"><strong id="total">—</strong><span>Asignaciones</span></div>
+        <div class="stat"><strong id="round">—</strong><span>Ronda actual</span></div>
+        <div class="stat"><strong id="remaining">—</strong><span>Casos pendientes</span></div>
+      </div>
+      <p class="muted small" id="distribution">Conectando con la base de datos…</p>
+      <div class="actions"><button id="refresh" class="secondary" type="button">↻ Actualizar registros</button></div>
+      <div class="notice warn">La lista general muestra el avance de la evaluación, pero ya no se presenta la colección completa de enunciados en pantalla.</div>
+    </section>
+  </div>
+
+  <section class="panel wide">
+    <div class="topline">
+      <div>
+        <h2>Registro de casos asignados</h2>
+        <div class="muted small">Del más reciente al más antiguo · Registro centralizado</div>
+      </div>
+      <div style="width:260px;max-width:100%"><input id="search" type="search" placeholder="Buscar estudiante o caso" aria-label="Buscar asignaciones"></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>N.º</th><th>Estudiante</th><th>Caso</th><th>Ronda</th><th>Fecha y hora</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="5" class="empty">Conectando…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="footer">Actualización automática cada 15 segundos mientras la página está visible. Si deseas ocultación total de los 20 ejercicios, el enunciado debe entregarse desde el servidor tras el sorteo y no desde el código del navegador.</p>
+  </section>
+</main>
+
+<script>
+(()=>{'use strict';
+const SUPABASE_URL='https://lmzhceaogkdveiobgiuv.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_gZy7JgL8uWFP-jKgwkgMjw_XaREXJ1W';
+
+const COMMON_DELIVERABLES = [
+  'Identifica las variables con sus unidades y el dominio dentro del contexto.',
+  'Calcula los límites que se piden y justifica cada paso.',
+  'Analiza los límites laterales cuando corresponda.',
+  'Determina las asíntotas y estudia la continuidad.',
+  'Construye o interpreta la gráfica de la función.',
+  'Redacta una conclusión zootécnica de máximo 100 palabras.'
+];
+
+const CASES = [
+  {num:1, group:'Pollos de engorde', subtitle:'Caso A · Crecimiento animal', intro:'El peso de un pollo de engorde (g) a los t días de edad se modela con:', formulaType:'single', formula:'P(t) = 3000(1 − e<sup>−0.05t</sup>)', ask:'Calcule lim<sub>t→∞</sub> P(t) e interprete el resultado en el contexto.'},
+  {num:2, group:'Pollos de engorde', subtitle:'Caso B · Cambio de dieta', intro:'El consumo diario de alimento (g/día) de un lote de pollos a los t días depende de la ración. Al día 14 se pasa de la ración de inicio a la de crecimiento:', formulaType:'piecewise', pieceLabel:'C(t) =', rows:[['20t + 10','0 ≤ t < 14'],['25t − 40','t ≥ 14']], ask:'Calcule lim<sub>t→14<sup>−</sup></sub> C(t), lim<sub>t→14<sup>+</sup></sub> C(t). Indique si existe lim<sub>t→14</sub> C(t) y qué significa para el consumo.'},
+  {num:3, group:'Pollos de engorde', subtitle:'Caso C · Suplementación', intro:'La ganancia diaria de peso (g/día) cuando se suplementan x g por kg de ración está dada por:', formulaType:'single', formula:'G(x) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">60x</span><span style="display:block;text-align:center;padding-top:2px">x + 3</span></span>, x ≥ 0', ask:'Determine la asíntota horizontal de G e interprétela en el contexto.'},
+  {num:4, group:'Pollos de engorde', subtitle:'Caso D · Indicador productivo', intro:'Un indicador productivo I del lote, según la variable de manejo x, se define por tramos:', formulaType:'piecewise', pieceLabel:'I(x) =', rows:[[ '<span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">x<sup>2</sup> − 81</span><span style="display:block;text-align:center;padding-top:2px">x − 9</span></span>','x ≠ 9'],['15','x = 9']], ask:'Determine si I es continua en x = 9 y justifique con la definición de continuidad.'},
+  {num:5, group:'Bovinos de leche', subtitle:'Caso A · Crecimiento', intro:'El peso (kg) de una ternera a los t días se modela con:', formulaType:'single', formula:'W(t) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">500</span><span style="display:block;text-align:center;padding-top:2px">1 + 9e<sup>−0.01t</sup></span></span>', ask:'Calcule lim<sub>t→∞</sub> W(t) e interprételo.'},
+  {num:6, group:'Bovinos de leche', subtitle:'Caso B · Transición de ración', intro:'Durante la transición a una nueva ración, el consumo de concentrado (kg/día) en la semana x es:', formulaType:'piecewise', pieceLabel:'R(x) =', rows:[['2x + 8','0 ≤ x < 5'],['3x + 3','x ≥ 5']], ask:'Analice los límites laterales en x = 5 y diga si el cambio de dieta produce un salto en el consumo.'},
+  {num:7, group:'Bovinos de leche', subtitle:'Caso C · Suplemento energético', intro:'La producción de leche (L/día) con s kg de suplemento energético está dada por:', formulaType:'single', formula:'L(s) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">30s + 100</span><span style="display:block;text-align:center;padding-top:2px">s + 5</span></span>, s ≥ 0', ask:'Halle la asíntota horizontal y analice si la vertical tiene sentido en este contexto.'},
+  {num:8, group:'Bovinos de leche', subtitle:'Caso D · Continuidad', intro:'Considere la función:', formulaType:'piecewise', pieceLabel:'g(x) =', rows:[[ '<span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">x<sup>2</sup> − x − 12</span><span style="display:block;text-align:center;padding-top:2px">x − 4</span></span>','x ≠ 4'],['7','x = 4']], ask:'Determine si g es continua en x = 4.'},
+  {num:9, group:'Porcinos', subtitle:'Caso A · Crecimiento', intro:'El peso (kg) a los t días está dado por:', formulaType:'single', formula:'W(t) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">120t<sup>2</sup></span><span style="display:block;text-align:center;padding-top:2px">t<sup>2</sup> + 4000</span></span>', ask:'Calcule lim<sub>t→∞</sub> W(t) e interprételo.'},
+  {num:10, group:'Porcinos', subtitle:'Caso B · Cambio de dieta', intro:'La ganancia diaria (kg/día) en el día t se modela por tramos. En t = 60 se cambia de dieta:', formulaType:'piecewise', pieceLabel:'G(t) =', rows:[['0.4 + 0.01t','0 ≤ t < 60'],['1.3 − 0.01t','60 ≤ t ≤ 100']], ask:'Analice los límites laterales y la existencia del límite en t = 60.'},
+  {num:11, group:'Porcinos', subtitle:'Caso C · Aditivo en la ración', intro:'La ganancia diaria (g/día) con x g de aditivo por kg de ración es:', formulaType:'single', formula:'G(x) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">900x<sup>2</sup></span><span style="display:block;text-align:center;padding-top:2px">x<sup>2</sup> + 16</span></span>, x ≥ 0', ask:'Determine la asíntota horizontal y justifique si existe asíntota vertical.'},
+  {num:12, group:'Porcinos', subtitle:'Caso D · Índice de bienestar', intro:'El índice de bienestar según la densidad x (animales/m²) está dado por:', formulaType:'piecewise', pieceLabel:'I(x) =', rows:[['x<sup>2</sup> + 1','x < 2'],['2x + 3','x ≥ 2']], ask:'Determine si I es continua en x = 2 y clasifique la discontinuidad si existe.'},
+  {num:13, group:'Cuyes', subtitle:'Caso A · Crecimiento', intro:'El peso (g) a los t días se modela con:', formulaType:'single', formula:'W(t) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">1200t + 3000</span><span style="display:block;text-align:center;padding-top:2px">t + 30</span></span>', ask:'Calcule lim<sub>t→∞</sub> W(t) e interprételo.'},
+  {num:14, group:'Cuyes', subtitle:'Caso B · Consumo de materia seca', intro:'El consumo de materia seca (g/día) t días después de pasar de forraje a ración mixta es:', formulaType:'piecewise', pieceLabel:'C(t) =', rows:[['25 + 3t','0 ≤ t < 10'],['70','t = 10'],['2t + 35','10 < t ≤ 15']], ask:'Calcule los límites laterales en t = 10 y compárelos con C(10).'},
+  {num:15, group:'Cuyes', subtitle:'Caso C · Suplemento vitamínico', intro:'La mortalidad (%) con una dosis x (g/kg) de suplemento vitamínico está dada por:', formulaType:'single', formula:'M(x) = 2 + <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">8</span><span style="display:block;text-align:center;padding-top:2px">x + 1</span></span>, x ≥ 0', ask:'Determine la asíntota horizontal e interprétela.'},
+  {num:16, group:'Cuyes', subtitle:'Caso D · Continuidad', intro:'Considere la función:', formulaType:'piecewise', pieceLabel:'p(x) =', rows:[[ '<span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">x − 3</span><span style="display:block;text-align:center;padding-top:2px">x<sup>2</sup> − 9</span></span>','x ≠ 3'],['1/6','x = 3']], ask:'Determine si p es continua en x = 3.'},
+  {num:17, group:'Tilapia roja', subtitle:'Caso A · Crecimiento', intro:'El peso (g) a los t días se modela por:', formulaType:'single', formula:'W(t) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">900t</span><span style="display:block;text-align:center;padding-top:2px">√(t<sup>2</sup> + 10000)</span></span>', ask:'Calcule lim<sub>t→∞</sub> W(t) e interprételo.'},
+  {num:18, group:'Tilapia roja', subtitle:'Caso B · Tasa de alimentación', intro:'La tasa de alimentación (% de biomasa) en el día t se define por tramos. En t = 20 se cambia de dieta:', formulaType:'piecewise', pieceLabel:'r(t) =', rows:[['6 − 0.1t','0 ≤ t < 20'],['0.1t + 1','20 ≤ t ≤ 60']], ask:'Analice los límites laterales y la existencia del límite.'},
+  {num:19, group:'Tilapia roja', subtitle:'Caso C · Aditivo proteico', intro:'La ganancia de biomasa (g/día) con x % de aditivo proteico está dada por:', formulaType:'single', formula:'G(x) = <span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">5x + 2</span><span style="display:block;text-align:center;padding-top:2px">2x + 10</span></span>, x ≥ 0', ask:'Determine la asíntota horizontal e interprétela.'},
+  {num:20, group:'Tilapia roja', subtitle:'Caso D · Índice de estrés', intro:'El índice de estrés según la densidad x (peces/m³) está dado por:', formulaType:'piecewise', pieceLabel:'q(x) =', rows:[[ '<span style="display:inline-block;vertical-align:middle"><span style="border-bottom:1px solid currentColor;display:block;padding:0 8px 2px;text-align:center">3</span><span style="display:block;text-align:center;padding-top:2px">x − 4</span></span>','x ≠ 4'],['2','x = 4']], ask:'Determine si q es continua en x = 4 y analice los límites laterales.'}
+];
+
+const LABELS = CASES.map(c => `${c.group} · ${c.subtitle}`);
+const $=id=>document.getElementById(id);
+const configured=/^https:\/\/[^/]+\.supabase\.co\/?$/.test(SUPABASE_URL)&&!SUPABASE_PUBLISHABLE_KEY.startsWith('PEGA_AQUI_');
+let records=[],busy=false;
+
+function message(s,type='ok'){
+  const target=$('message'); target.replaceChildren(); if(!s)return;
+  const box=document.createElement('div'); box.className='notice '+type; box.textContent=s; target.append(box);
+}
+function normal(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
+function date(s){const d=new Date(s);return isNaN(d.getTime())?'':new Intl.DateTimeFormat('es-EC',{dateStyle:'short',timeStyle:'medium',timeZone:'America/Guayaquil'}).format(d)}
+function el(tag,value){const e=document.createElement(tag);e.textContent=String(value??'');return e}
+async function rpc(name,payload={}){
+  const r=await fetch(SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/rpc/'+name,{method:'POST',headers:{'apikey':SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),cache:'no-store'});
+  let data; try{data=await r.json()}catch{throw Error('No se pudo interpretar la respuesta de Supabase.')}
+  if(!r.ok) throw Error(data?.message||data?.error||('Error HTTP '+r.status));
+  return data;
+}
+function render(){
+  const n=records.length, round=Math.floor(n/20)+1, done=n%20;
+  $('total').textContent=n; $('round').textContent=round; $('remaining').textContent=20-done;
+  $('distribution').textContent=n===0?'Primera ronda: casos del 1 al 20 en secuencia.':`Ronda ${round}: ${done} de 20 asignados. ${round===1?'Orden secuencial.':'Orden aleatorio sin repeticiones.'}`;
+  const q=normal($('search').value), body=$('rows'); body.replaceChildren(); let shown=0;
+  for(const r of records){
+    const searchText = `${r.estudiante} ${r.caso} caso ${r.caso} ${LABELS[r.caso-1]}`;
+    if(q && !normal(searchText).includes(q)) continue;
+    shown++;
+    const tr=document.createElement('tr'); tr.append(el('td',r.id),el('td',r.estudiante));
+    const c=el('td',''); const pill=el('span','Caso '+r.caso+' · '+CASES[r.caso-1].group); pill.className='pill'; c.append(pill);
+    tr.append(c,el('td',r.ronda),el('td',date(r.fecha_asignacion))); body.append(tr);
+  }
+  if(!shown){const tr=document.createElement('tr'),td=el('td',q?'No hay resultados.':'Aún no hay sorteos.'); td.colSpan=5; td.className='empty'; tr.append(td); body.append(tr)}
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function pieceRowsHtml(rows){
+  return `<div class="piece-rows">${rows.map(([expr,cond])=>`<div class="piece-line"><span>${expr}</span><span>${cond}</span></div>`).join('')}</div>`;
+}
+function buildCard(caseData, record){
+  const formula = caseData.formulaType==='piecewise'
+    ? `<div class="formula-box"><div class="piecewise"><div class="piece-left">${caseData.pieceLabel} {</div><div class="piece-right">${pieceRowsHtml(caseData.rows)}</div></div></div>`
+    : `<div class="formula-box"><div class="formula-main">${caseData.formula}</div></div>`;
+  return `
+    <div class="case-card">
+      <div class="case-head">
+        <div class="case-badge">${caseData.num}</div>
+        <div>
+          <h3 class="case-title">${caseData.group}</h3>
+          <div class="case-sub">${caseData.subtitle}</div>
+          <div class="case-sub">${escapeHtml(record.estudiante)} · Ronda ${record.ronda} · ${escapeHtml(date(record.fecha_asignacion))}</div>
+        </div>
+      </div>
+      <div class="case-text">${caseData.intro}</div>
+      ${formula}
+      <p class="ask-line"><strong>Se pide.</strong> ${caseData.ask}</p>
+      <p class="deliver-title">Qué debes entregar</p>
+      <ol class="deliver-list">${COMMON_DELIVERABLES.map(x=>`<li>${x}</li>`).join('')}</ol>
+    </div>`;
+}
+function showResult(r){
+  const data=CASES[r.caso-1];
+  $('assignment').innerHTML = buildCard(data,r);
+  $('assignment').classList.add('visible');
+}
+async function refresh(showErrors=false){
+  try{
+    const data=await rpc('listar_asignaciones');
+    if(!Array.isArray(data)) throw Error('La consulta no devolvió una lista.');
+    records=data; $('connection').textContent='Conectado'; $('connection').classList.add('ready'); render(); return true;
+  }catch(e){ $('connection').textContent='Sin conexión'; $('connection').classList.remove('ready'); if(showErrors) message('No fue posible consultar el registro: '+e.message,'err'); return false; }
+}
+
+$('draw').addEventListener('click',async()=>{
+  if(busy||!configured)return;
+  const name=$('studentName').value.replace(/\s+/g,' ').trim();
+  if(name.length<5||name.split(' ').length<2){message('Ingresa al menos un nombre y un apellido.','err');return}
+  busy=true; $('draw').disabled=true; message('Registrando el sorteo en la base de datos…','ok'); $('assignment').classList.remove('visible');
+  try{
+    const response=await rpc('sortear_caso',{p_estudiante:name});
+    const r=Array.isArray(response)?response[0]:response;
+    if(!r||!Number.isInteger(r.caso)) throw Error('Resultado de sorteo inválido.');
+    $('wheelText').textContent='SORTEANDO'; $('wheel').style.transform=`rotate(${720+r.caso*37}deg)`;
+    await new Promise(resolve=>setTimeout(resolve,1100));
+    $('wheelText').textContent='CASO '+r.caso; showResult(r);
+    message('Asignación consultada y confirmada en la base de datos.','ok'); await refresh(false);
+  }catch(e){ message('No se pudo completar el sorteo: '+e.message,'err'); }
+  finally{ busy=false; $('draw').disabled=!configured; }
+});
+$('refresh').addEventListener('click',()=>refresh(true)); $('search').addEventListener('input',render);
+
+if(configured){ $('draw').disabled=false; refresh(true); setInterval(()=>{if(!document.hidden&&!busy)refresh(false)},15000); }
+else {
+  message('Configuración pendiente: abre index.html con un editor de texto e introduce SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY.','err');
+  $('distribution').textContent='Esperando configuración de Supabase.';
+  $('rows').replaceChildren(); const tr=document.createElement('tr'),td=el('td','Configura primero Supabase en index.html.'); td.colSpan=5; td.className='empty'; tr.append(td); $('rows').append(tr);
+}
+})();
+</script>
+</body>
+</html>
